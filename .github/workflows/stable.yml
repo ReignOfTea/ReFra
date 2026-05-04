@@ -39,7 +39,13 @@ jobs:
           fileDir: 'app/'
           encodedString: ${{ secrets.SIGNING_KEY }}
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: >-
+          ./gradlew
+          :app:assembleArm64-v8aNoMlRelease
+          :app:assembleArmeabi-v7aNoMlRelease
+          :app:assembleX86_64NoMlRelease
+          :app:assembleX86NoMlRelease
+          :app:assembleUniversalNoMlRelease
         env: 
           SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -81,7 +87,13 @@ jobs:
           fileDir: 'app/'
           encodedString: ${{ secrets.SIGNING_KEY }}
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: >-
+          ./gradlew
+          :app:assembleArm64-v8aNoMlRelease
+          :app:assembleArmeabi-v7aNoMlRelease
+          :app:assembleX86_64NoMlRelease
+          :app:assembleX86NoMlRelease
+          :app:assembleUniversalNoMlRelease
         env: 
           SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -94,12 +106,12 @@ jobs:
         id: gplay_patcher
         run: git config --global user.email "paulionut2003@gmail.com" &&
           git config --global user.name "IacobIonut01" &&
-          git fetch https://github.com/IacobIonut01/Gallery.git main_play &&
-          git cherry-pick 7934c248 033a3dd0 &&
+          git fetch https://github.com/IacobIonut01/ReFra.git main_play &&
+          git cherry-pick 0dbdd73a 2322b135 &&
           chmod +x ./strip_allfiles_permission.sh && ./strip_allfiles_permission.sh &&
           printf 'ALL_FILES_ACCESS=false\nINCLUDE_MAPS=true\n' > ./app.properties
       - name: Build Google Play Bundle
-        run: ./gradlew bundleUniversalGplay
+        run: ./gradlew :app:bundleUniversalWithMlGplay
         env: 
           SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -109,15 +121,15 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.dot.gallery.gplay
-          releaseFiles: app/build/outputs/bundle/universalGplay/ReFra-${{ steps.versionname.outputs.versionName }}-${{ steps.versioncode.outputs.versionCode }}-universal-gplay.aab
+          releaseFiles: app/build/outputs/bundle/universalWithMlGplay/ReFra-${{ steps.versionname.outputs.versionName }}-${{ steps.versioncode.outputs.versionCode }}-universalWithMl-gplay.aab
           track: production
           releaseName: ${{ steps.versionname.outputs.versionName }}-${{ steps.versioncode.outputs.versionCode }} Release
-          mappingFile: app/build/outputs/mapping/universalGplay/mapping.txt
-          debugSymbols: app/build/intermediates/merged_native_libs/universalGplay/mergeUniversalGplayNativeLibs/out/lib
+          mappingFile: app/build/outputs/mapping/universalWithMlGplay/mapping.txt
+          debugSymbols: app/build/intermediates/merged_native_libs/universalWithMlGplay/mergeUniversalWithMlGplayNativeLibs/out/lib
       - uses: actions/upload-artifact@v4
         with:
           name: ReFra Release (GPlay Bundle)
-          path: app/build/outputs/bundle/universalGplay/ReFra-${{ steps.versionname.outputs.versionName }}-${{ steps.versioncode.outputs.versionCode }}-universal-gplay.aab
+          path: app/build/outputs/bundle/universalWithMlGplay/ReFra-${{ steps.versionname.outputs.versionName }}-${{ steps.versioncode.outputs.versionCode }}-universalWithMl-gplay.aab
 
   release:
     needs: [build_nomaps, build_maps]
