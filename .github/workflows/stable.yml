@@ -250,12 +250,37 @@ jobs:
             done
           }
 
+          recommend_table() {
+            local dir="$1" tag="$2"
+            local apk name hash url
+            apk=$(find "$dir" -name "*-universal-release.apk" -type f | sort | head -n 1)
+            echo "### Confused on which to download?"
+            echo ""
+            echo "If you're not sure, grab the recommended build below. It works on every device, no questions asked."
+            echo ""
+            echo "Requires **Android 10 (API 29)** or newer."
+            echo ""
+            echo "| Recommended | Variant | Min Android | Download | SHA256 |"
+            echo "|:---|:---|:---|:---|:---|"
+            if [ -n "$apk" ]; then
+              name=$(basename "$apk")
+              hash=$(sha256sum "$apk" | awk '{print $1}')
+              url="https://github.com/IacobIonut01/ReFra/releases/download/${tag}/${name}"
+              echo "| Best for most people | Standard (NoML) · Universal | Android 10 (API 29) | [Click Here](${url}) | \`${hash}\` |"
+            else
+              echo "| Best for most people | Standard (NoML) · Universal | Android 10 (API 29) | _Unavailable_ | |"
+            fi
+          }
+
           TAG="${{ needs.prepare.outputs.versionName }}"
           CHANGELOG="${VERSION}-changelog.txt"
 
           cat .github/RELEASE_BODY.md >> "$CHANGELOG"
           echo "" >> "$CHANGELOG"
           cat .github/VARIANT_INFO.md >> "$CHANGELOG"
+          echo "" >> "$CHANGELOG"
+
+          recommend_table "artifacts/maps" "$TAG" >> "$CHANGELOG"
           echo "" >> "$CHANGELOG"
 
           echo "### Standard (NoML)" >> "$CHANGELOG"
