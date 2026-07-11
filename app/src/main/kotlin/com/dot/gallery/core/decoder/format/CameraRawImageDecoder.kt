@@ -30,9 +30,10 @@ object CameraRawImageDecoder {
     private data class JpegSegment(val offset: Int, val length: Int)
 
     fun getSize(bytes: ByteArray, mimeType: String? = null): Size? {
-        exifDimensions(bytes)?.let { return it }
-        val segment = selectEmbeddedJpeg(bytes, reqW = 0, reqH = 0) ?: return null
-        return jpegBounds(bytes, segment)
+        selectEmbeddedJpeg(bytes, reqW = 0, reqH = 0)?.let { segment ->
+            jpegBounds(bytes, segment)?.let { return it }
+        }
+        return exifDimensions(bytes)
     }
 
     fun decode(bytes: ByteArray, reqW: Int, reqH: Int, mimeType: String? = null): Bitmap? {
@@ -42,14 +43,15 @@ object CameraRawImageDecoder {
 
         val targetW = if (reqW > 0) reqW else 0
         val targetH = if (reqH > 0) reqH else 0
+        val wantsThumbnail = targetW > 0 && targetH > 0
 
-        val exifThumb = exifThumbnail(bytes)
+        val exifThumb = if (wantsThumbnail) exifThumbnail(bytes) else null
         if (exifThumb != null && meetsTarget(exifThumb, targetW, targetH)) {
             return fit(exifThumb, targetW, targetH)
         }
 
         val embedded = selectEmbeddedJpeg(bytes, targetW, targetH)?.let { decodeJpeg(bytes, it) }
-        val bitmap = embedded ?: exifThumb ?: return null
+        val bitmap = embedded ?: exifThumbnail(bytes) ?: return null
         return fit(bitmap, targetW, targetH)
     }
 
